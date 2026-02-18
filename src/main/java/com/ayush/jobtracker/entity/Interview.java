@@ -29,10 +29,11 @@ public class Interview {
     @JoinColumn(name = "application_id",nullable = false)
     private Application application;
     private LocalDateTime scheduledAt;
+    @Column(nullable = true)
     private LocalDateTime completedAt;
     @Column(nullable = false)
     private int round;
-    private String location;
+    private String meetingDetails;
     private LocalDateTime createdAt;
     @PrePersist
     void setCreatedAt(){

@@ -9,4 +9,5 @@ import com.ayush.jobtracker.entity.Interview;
 public interface InterviewRepository extends JpaRepository<Interview,Long>{
     List<Interview> findByApplicationIdOrderByRoundAsc(Long id);
     boolean existsByApplicationIdAndRound(Long applicationId, int round);
+    boolean existsByApplicationIdAndCompletedAtIsNull(Long applicationId);
 }

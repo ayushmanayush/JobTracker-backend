@@ -8,10 +8,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
-
 @Data
-public class InterviewRequestDto {
-     @NotNull
+public class InterviewResponseDto {
+    @NotNull
     private Long applicationId;
     @NotNull
     @Positive
@@ -24,4 +23,5 @@ public class InterviewRequestDto {
     private InterviewMode mode;
     @NotBlank
     private String meetingDetails;
+    private LocalDateTime completedAt;
 }

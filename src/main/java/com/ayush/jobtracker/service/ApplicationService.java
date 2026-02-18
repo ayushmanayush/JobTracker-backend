@@ -1,7 +1,5 @@
 package com.ayush.jobtracker.service;
-
-
-
+import com.ayush.jobtracker.repository.InterviewRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,15 +18,18 @@ import com.ayush.jobtracker.repository.ApplicationStatusHistoryRepository;
 @Service
 @Transactional
 public class ApplicationService {
+
+    private final InterviewRepository interviewRepository;
     private final ApplicationRepository applicationRepository;
     private final ApplicationCreationMapper applicationmapper;
     private final ApplicationStatusHistoryRepository applicationstatushistoryrepo;
     public ApplicationService(ApplicationRepository applicationRepository,ApplicationCreationMapper applicationmapper,
         ApplicationStatusHistoryRepository applicationstatushistoryrepo
-    ){
+    , InterviewRepository interviewRepository){
         this.applicationRepository = applicationRepository;
         this.applicationmapper = applicationmapper;
         this.applicationstatushistoryrepo = applicationstatushistoryrepo;
+        this.interviewRepository = interviewRepository;
     }
     public ApplicationresponseDto createApplication(ApplicationRequestDto dto){
         Application entity = applicationRepository.save(applicationmapper.toEntity(dto));
@@ -41,6 +42,13 @@ public class ApplicationService {
         boolean isValid = oldApplicationStatus.canTransitionTo(dto.getStatus());//checking valid transition
         if(!isValid){//if not valid 
             throw new InvalidTransitionException("Cannot transition from " + oldApplicationStatus + " to " + dto.getStatus());
+        }
+        if(dto.getStatus() == null) {
+        throw new InvalidTransitionException("New status cannot be null");}
+        if(oldStatusApplication.getStatus() == ApplicationStatus.INTERVIEW && interviewRepository.existsByApplicationIdAndCompletedAtIsNull(id))//if user in interview status and wants to move forward but he has scheduled an interview which he has not marked completed 
+        //he will not be allowed to change the status of the application
+            {
+            throw new InvalidTransitionException("Cannot transist from INTERVIEW until Scheduled Interview is completed");
         }
         ApplicationStatusHistory oldstatushistory= new ApplicationStatusHistory();
         oldstatushistory.setApplication(oldStatusApplication);

@@ -15,4 +15,13 @@ public class GlobalExceptionHandeler {
     public ResponseEntity<String>  InvalidTransitionExceptionHandeler(InvalidTransitionException ex){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
+    @ExceptionHandler(InterviewNotFound.class)
+    public ResponseEntity<String> InterviewNotfoundExceptionHandeler(InterviewNotFound ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+    @ExceptionHandler(ScheduleException.class)
+    public ResponseEntity<String> ScheduleExceptionHandeler(ScheduleException ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
 }
