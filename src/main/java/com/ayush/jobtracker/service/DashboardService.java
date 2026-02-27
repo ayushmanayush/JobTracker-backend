@@ -24,7 +24,7 @@ public class DashboardService {
             totalRejected = applicationrepo.countByUserIdAndStatus(id, ApplicationStatus.REJECTED);
             offerRate = (totalOffered * 100.0)/total_applications;
             rejectionRate = (totalRejected * 100.0)/total_applications;
-        } 
+        }
         drt.setTotalApplications(total_applications);
         drt.setTotalOffered(totalOffered);
         drt.setTotalRejected(totalRejected);

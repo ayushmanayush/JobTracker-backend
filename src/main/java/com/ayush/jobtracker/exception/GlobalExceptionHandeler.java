@@ -23,5 +23,9 @@ public class GlobalExceptionHandeler {
     public ResponseEntity<String> ScheduleExceptionHandeler(ScheduleException ex){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
+    @ExceptionHandler(UserAlreadyExistException.class)
+    public ResponseEntity<String> userAlreadyExists(UserAlreadyExistException ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
 
 }
