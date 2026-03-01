@@ -35,6 +35,9 @@ public class Interview {
     private int round;
     private String meetingDetails;
     private LocalDateTime createdAt;
+    @Enumerated(EnumType.STRING)
+    private ReminderStatus reminderStatus = ReminderStatus.PENDING;
+    private LocalDateTime reminderProcessedAt;
     @PrePersist
     void setCreatedAt(){
         createdAt= LocalDateTime.now();

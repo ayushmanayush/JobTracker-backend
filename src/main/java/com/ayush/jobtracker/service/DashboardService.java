@@ -1,36 +1,71 @@
 package com.ayush.jobtracker.service;
+import java.time.Duration;
 
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.ayush.jobtracker.dto.DashboardResponseDto;
 import com.ayush.jobtracker.entity.ApplicationStatus;
+import com.ayush.jobtracker.entity.User;
 import com.ayush.jobtracker.repository.ApplicationRepository;
+import com.ayush.jobtracker.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class DashboardService {
-    private final ApplicationRepository applicationrepo;
-    public DashboardService(ApplicationRepository applicationrepo){
-        this.applicationrepo = applicationrepo;
-    }
-    public DashboardResponseDto toUser(Long id){
-        DashboardResponseDto drt = new DashboardResponseDto();
-        long total_applications = applicationrepo.countByUserId(id);
-        long totalOffered = 0;
-        long totalRejected = 0;
-        double offerRate = 0.0;
-        double rejectionRate = 0.0;
-        if(total_applications != 0){
-            totalOffered = applicationrepo.countByUserIdAndStatus(id, ApplicationStatus.OFFERED);
-            totalRejected = applicationrepo.countByUserIdAndStatus(id, ApplicationStatus.REJECTED);
-            offerRate = (totalOffered * 100.0)/total_applications;
-            rejectionRate = (totalRejected * 100.0)/total_applications;
-        }
-        drt.setTotalApplications(total_applications);
-        drt.setTotalOffered(totalOffered);
-        drt.setTotalRejected(totalRejected);
-        drt.setRejectionRate(rejectionRate);
-        drt.setOfferRate(offerRate);
-        return drt;
 
+    private final ApplicationRepository applicationrepo;
+    private final UserRepository userrepo;
+    private final StringRedisTemplate redis;
+    private final ObjectMapper objectMapper;
+
+    public DashboardService(ApplicationRepository applicationrepo,
+                            UserRepository userrepo,
+                            StringRedisTemplate redis,
+                            ObjectMapper objectMapper) {
+        this.applicationrepo = applicationrepo;
+        this.userrepo = userrepo;
+        this.redis = redis;
+        this.objectMapper = objectMapper;
+    }
+
+    public DashboardResponseDto toUser(String username){
+        User user = userrepo.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        Long userId = user.getId();
+        String key = "dashboard:" + userId;
+        try { // trying in redis if data available
+            String cached = redis.opsForValue().get(key);
+            if (cached != null) {
+                return objectMapper.readValue(cached, DashboardResponseDto.class);
+            }
+        } catch (Exception e) {
+            System.out.println("Redis error: " + e.getMessage());
+        }
+        long total = applicationrepo.countByUserId(userId);
+        long offered = applicationrepo.countByUserIdAndStatus(userId, ApplicationStatus.OFFERED);
+        long rejected = applicationrepo.countByUserIdAndStatus(userId, ApplicationStatus.REJECTED);
+
+        DashboardResponseDto dto = new DashboardResponseDto();
+        dto.setTotalApplications(total);
+        dto.setTotalOffered(offered);
+        dto.setTotalRejected(rejected);
+
+        if (total != 0) {
+            dto.setOfferRate((offered * 100.0) / total);
+            dto.setRejectionRate((rejected * 100.0) / total);
+        }
+
+        try {
+            String json = objectMapper.writeValueAsString(dto);
+            redis.opsForValue().set(key, json, Duration.ofMinutes(10));
+        } catch (Exception e) {
+            System.out.println("Redis error: " + e.getMessage());
+        }
+
+        return dto;
     }
 }
+

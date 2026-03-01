@@ -1,0 +1,42 @@
+package com.ayush.jobtracker.service;
+
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+
+import com.ayush.jobtracker.entity.Interview;
+import com.ayush.jobtracker.exception.InterviewNotFound;
+import com.ayush.jobtracker.repository.InterviewRepository;
+
+import jakarta.transaction.Transactional;
+
+@Service
+public class EmailService {
+
+    private final InterviewRepository interviewrepo;
+    private final JavaMailSender mailSender;
+    public EmailService(JavaMailSender mailSender, InterviewRepository interviewrepo){
+        this.mailSender = mailSender;
+        this.interviewrepo = interviewrepo;
+    }
+    @Async
+    @Transactional
+    public void sendInterviewReminder(Long interviewId) {
+        Interview interview = interviewrepo.findById(interviewId).orElseThrow(()-> new InterviewNotFound("Interview Not scheduled for id: "+interviewId));
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(interview.getApplication().getUser().getEmail());
+        message.setSubject("Interview Reminder");
+        message.setText(
+        "Hello,\n\n" +
+        "This is a reminder that you have an interview scheduled.\n\n" +
+        "Company: " + interview.getApplication().getCompanyName() + "\n" +
+        "Role: " + interview.getApplication().getRole() + "\n" +
+        "Date & Time: " + interview.getScheduledAt() + "\n" +
+        "Mode: " + interview.getMode() + "\n\n" +
+        "Best of luck!\n" +
+        "JobTracker Team"
+        );
+        mailSender.send(message);
+    }
+}

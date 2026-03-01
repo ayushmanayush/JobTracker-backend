@@ -12,6 +12,7 @@ import com.ayush.jobtracker.dto.InterviewResponseDto;
 import com.ayush.jobtracker.entity.Application;
 import com.ayush.jobtracker.entity.ApplicationStatus;
 import com.ayush.jobtracker.entity.Interview;
+import com.ayush.jobtracker.entity.ReminderStatus;
 import com.ayush.jobtracker.exception.ApplicationNotFoundException;
 import com.ayush.jobtracker.exception.InterviewNotFound;
 import com.ayush.jobtracker.exception.ScheduleException;
@@ -57,6 +58,7 @@ public class InterviewService {
         interview.setMeetingDetails(dto.getMeetingDetails());
         interview.setRound(dto.getRound());
         interview.setScheduledAt(dto.getScheduledAt());
+        interview.setReminderStatus(ReminderStatus.PENDING);
         Interview saved = interviewrepo.save(interview);
         InterviewResponseDto toSend =new InterviewResponseDto();
         toSend.setApplicationId(saved.getApplication().getId());

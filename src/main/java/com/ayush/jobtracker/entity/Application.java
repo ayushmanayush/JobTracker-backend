@@ -6,9 +6,12 @@ import java.time.LocalDateTime;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
@@ -27,7 +30,9 @@ public class Application {
     private ApplicationStatus status;
     private LocalDate appliedDate;
     private LocalDateTime createdAt;
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "User_Id",nullable = false)
+    private User user;
     //@prepersist - this annotations helps jpa to trigger the method below it before saving the value to Database
     @PrePersist
     public void onCreate(){
