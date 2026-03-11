@@ -61,6 +61,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         response.setContentType("application/json");
         response.getWriter()
                 .write("{\"token\":\"" + jwt + "\"}");
+        response.sendRedirect("http://localhost:5500/login%20page/o-authsucceshandeler.html?token=" + jwt);
 
         clearAuthenticationAttributes(request);
     }

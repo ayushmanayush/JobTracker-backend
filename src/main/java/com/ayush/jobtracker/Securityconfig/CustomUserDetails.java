@@ -49,5 +49,8 @@ public class CustomUserDetails implements UserDetails{
     public boolean isEnabled() { // is account enabled we can add this parameter in user entity afterward
         return true;
     }
+    public String getFullName(){
+        return user.getFullName();
+    }
     //some of the criteria has not been added to keep this project simple those are returning true by default if it will be added then we will return user.get();
 }
