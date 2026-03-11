@@ -31,10 +31,12 @@ public class RefreshTokenService{
         return newRefreshToken;
         }
         catch(Exception ex){
-            throw new RuntimeException("Error creating RefreshToken");
+            System.out.println("Redis unavailable. Refresh token not stored.\n");
+            return null;
         }
     }
     public String validateRefreshToken(String token,String deviceInfo){
+        try{
         if(token == null){
             return null;
         }
@@ -43,21 +45,25 @@ public class RefreshTokenService{
             deleteToken(token);
             return null;
         }
-        RedisSessiondto dto = new RedisSessiondto();
-        try{
-         dto = objectmapper.readValue(json, RedisSessiondto.class);
-        }
-        catch(Exception ex) {
-            throw new RuntimeException("error in fetching value from string to dto class");
-        }
+        RedisSessiondto dto = objectmapper.readValue(json, RedisSessiondto.class);
         if(!dto.getDeviceInfo().equals(deviceInfo)){
             deleteToken(token);
             return null;
         }
         return dto.getEmail();
     }
+    catch(Exception ex){
+        System.out.println("redis Unavailable");
+        return null;
+    }
+    }
     public void deleteToken(String token){
+        try{
         redis.delete("refresh:"+token);
+        }
+        catch(Exception ex){
+            System.out.println("redis Unavailable");
+        }
     }
 
 }

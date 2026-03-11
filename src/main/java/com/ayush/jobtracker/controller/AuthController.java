@@ -63,12 +63,14 @@ public class AuthController {
         }
         String deviceInfo = request.getHeader("User-Agent");// device information 
         String newrefreshtoken = refreshtokenservice.generateNewToken(userDetails.getUsername(),ip,deviceInfo);
+        if(newrefreshtoken != null){
         Cookie cookie = new Cookie("refreshToken",newrefreshtoken);
-        cookie.setSecure(false);//false in local or else will not run
+        cookie.setSecure(true);//false in local or else will not run
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(24 * 60 * 60);
         response.addCookie(cookie);
+        }
         return ResponseEntity.status(HttpStatus.OK).body(new LoginResponseDto(token,userDetails.getFullName()));
     }
     @PostMapping("/refresh")
@@ -98,12 +100,14 @@ public class AuthController {
         }
         refreshtokenservice.deleteToken(refreshToken);
         String newRefreshToken = refreshtokenservice.generateNewToken(email,ip,deviceInfo);
+        if(newRefreshToken != null){
         Cookie newCookie = new Cookie("refreshToken", newRefreshToken);
         newCookie.setHttpOnly(true);
-        newCookie.setSecure(false);//false in local or else will not work 
+        newCookie.setSecure(true);//false in local or else will not work 
         newCookie.setPath("/");
         newCookie.setMaxAge(24 * 60 * 60);
         response.addCookie(newCookie);
+        }
         String newaccesstoken = jwtService.generateToken(email);
         User user = userRepo.findByEmail(email).orElseThrow(()-> new UsernameNotFoundException("Username not found "));
 
@@ -132,7 +136,7 @@ public class AuthController {
         refreshtokenservice.deleteToken(refreshtoken);
         Cookie clearCookie = new Cookie("refreshToken", null);
         clearCookie.setHttpOnly(true);
-        clearCookie.setSecure(false); // false in local
+        clearCookie.setSecure(true);// false in local
         clearCookie.setPath("/");
         clearCookie.setMaxAge(0);
         response.addCookie(clearCookie);
