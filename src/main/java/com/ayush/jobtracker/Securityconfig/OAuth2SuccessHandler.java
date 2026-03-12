@@ -14,7 +14,9 @@ import org.springframework.stereotype.Component;
 import com.ayush.jobtracker.entity.User;
 import com.ayush.jobtracker.repository.UserRepository;
 import com.ayush.jobtracker.service.JwtService;
+import com.ayush.jobtracker.service.RefreshTokenService;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -23,11 +25,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
-
-    public OAuth2SuccessHandler(JwtService jwtService,
-                                UserRepository userRepository) {
+    private final RefreshTokenService refreshTokenService;
+    public OAuth2SuccessHandler(JwtService jwtService, UserRepository userRepository, RefreshTokenService refreshTokenService) {
         this.jwtService = jwtService;
         this.userRepository = userRepository;
+        this.refreshTokenService = refreshTokenService;
 
         setRedirectStrategy((request, response, url) -> {});
     }
@@ -57,12 +59,16 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 });
 
         String jwt = jwtService.generateToken(email);
-
+        String devce_Info = request.getHeader("User-Agent");
+        String ip = request.getHeader("X-Forwarded-For");//for ip address
+        if (ip == null) {
+            ip = request.getRemoteAddr();// for ip address if not fetched using  getHeader("X-Forward-For")
+        }
+        String refreshtoken = refreshTokenService.generateNewToken(email,devce_Info,ip);
+        Cookie refreshTokenCookie = new Cookie("refreshToken",refreshtoken);
+        response.addCookie(refreshTokenCookie);
         response.setContentType("application/json");
-        response.getWriter()
-                .write("{\"token\":\"" + jwt + "\"}");
-        response.sendRedirect("http://localhost:5500/login%20page/o-authsucceshandeler.html?token=" + jwt);
-
+        response.sendRedirect("https://jobtracker-frontend-rccb.vercel.app/oauthsuccess?token=" + jwt);
         clearAuthenticationAttributes(request);
     }
 }

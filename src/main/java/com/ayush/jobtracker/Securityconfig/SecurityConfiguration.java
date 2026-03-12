@@ -37,7 +37,7 @@ public class SecurityConfiguration{
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://127.0.0.1:5500","http://localhost:5500","http://127.0.0.1:5173","http://localhost:5173"));//frontend for localhost we as we are creating frontend in react
+        config.setAllowedOrigins(List.of("http://127.0.0.1:5173","http://localhost:5173","https://jobtracker-frontend-rccb.vercel.app/"));//frontend for localhost we as we are creating frontend in react
         config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
