@@ -68,7 +68,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Cookie refreshTokenCookie = new Cookie("refreshToken",refreshtoken);
         response.addCookie(refreshTokenCookie);
         response.setContentType("application/json");
-        response.sendRedirect("https://jobtracker-frontend-rccb.vercel.app/oauthsuccess?token=" + jwt);
+        response.sendRedirect("https://jobtracker-frontend-rccb.vercel.app/oauthsuccess?token=" + jwt+"&name="+name);
         clearAuthenticationAttributes(request);
     }
 }
