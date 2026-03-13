@@ -4,7 +4,6 @@ package com.ayush.jobtracker.Securityconfig;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.security.core.Authentication;
@@ -53,17 +52,15 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String email = (String) attributes.get("email");
         String name = (String) attributes.get("name");
         String password = UUID.randomUUID().toString();
-        Optional<User> checkMail = userRepository.findByEmail(email);
-        if(checkMail == null){
-            emailService.sendRegisterMail(email, password);
-        }
         userRepository.findByEmail(email)
                 .orElseGet(() -> {
                     User user = new User();
                     user.setEmail(email);
                     user.setFullName(name);
                     user.setPassword(password);
-                    return userRepository.save(user);
+                    User savedUser = userRepository.save(user);
+                    emailService.sendRegisterMail(email, password);
+                    return savedUser;
                 });
 
         String jwt = jwtService.generateToken(email);
