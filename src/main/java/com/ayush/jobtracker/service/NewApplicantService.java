@@ -17,9 +17,11 @@ import com.ayush.jobtracker.repository.UserRepository;
 public class NewApplicantService {
     private final UserRepository userrepo;
     private final PasswordEncoder encoder;
-    public NewApplicantService(UserRepository userrepo, PasswordEncoder encoder){
+    private final EmailService emailService;
+    public NewApplicantService(UserRepository userrepo, PasswordEncoder encoder,EmailService emailService){
         this.userrepo = userrepo;
         this.encoder = encoder;
+        this.emailService = emailService;
     }
     public void createuser(NewApplicantRequestDto dto){
         if(userrepo.existsByEmail(dto.getEmail())){
@@ -31,6 +33,7 @@ public class NewApplicantService {
         user.setPassword(encoder.encode(dto.getPassword()));
         try{
         userrepo.save(user);
+        emailService.sendRegisterMail(dto.getEmail(),dto.getPassword());
         }
         catch(DataIntegrityViolationException ex){
             throw new UserAlreadyExistException("User with Email Already Exists");

@@ -4,6 +4,7 @@ package com.ayush.jobtracker.Securityconfig;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.security.core.Authentication;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import com.ayush.jobtracker.entity.User;
 import com.ayush.jobtracker.repository.UserRepository;
+import com.ayush.jobtracker.service.EmailService;
 import com.ayush.jobtracker.service.JwtService;
 import com.ayush.jobtracker.service.RefreshTokenService;
 
@@ -26,10 +28,12 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final RefreshTokenService refreshTokenService;
-    public OAuth2SuccessHandler(JwtService jwtService, UserRepository userRepository, RefreshTokenService refreshTokenService) {
+    private final EmailService emailService;
+    public OAuth2SuccessHandler(JwtService jwtService, UserRepository userRepository, RefreshTokenService refreshTokenService, EmailService emailService) {
         this.jwtService = jwtService;
         this.userRepository = userRepository;
         this.refreshTokenService = refreshTokenService;
+        this.emailService = emailService;
 
         setRedirectStrategy((request, response, url) -> {});
     }
@@ -48,13 +52,17 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         String email = (String) attributes.get("email");
         String name = (String) attributes.get("name");
-
+        String password = UUID.randomUUID().toString();
+        Optional<User> checkMail = userRepository.findByEmail(email);
+        if(checkMail == null){
+            emailService.sendRegisterMail(email, password);
+        }
         userRepository.findByEmail(email)
                 .orElseGet(() -> {
                     User user = new User();
                     user.setEmail(email);
                     user.setFullName(name);
-                    user.setPassword(UUID.randomUUID().toString());
+                    user.setPassword(password);
                     return userRepository.save(user);
                 });
 
