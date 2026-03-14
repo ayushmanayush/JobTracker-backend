@@ -31,7 +31,8 @@ public class RefreshTokenService{
         return newRefreshToken;
         }
         catch(Exception ex){
-            System.out.println("Redis unavailable. Refresh token not stored.\n");
+            System.err.println("CRITICAL: Redis error in RefreshTokenService for user: " + email);
+            ex.printStackTrace(); 
             return null;
         }
     }

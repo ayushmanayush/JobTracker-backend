@@ -1,4 +1,5 @@
 package com.ayush.jobtracker.service;
+
 import java.time.Duration;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -21,16 +22,16 @@ public class DashboardService {
     private final ObjectMapper objectMapper;
 
     public DashboardService(ApplicationRepository applicationrepo,
-                            UserRepository userrepo,
-                            StringRedisTemplate redis,
-                            ObjectMapper objectMapper) {
+            UserRepository userrepo,
+            StringRedisTemplate redis,
+            ObjectMapper objectMapper) {
         this.applicationrepo = applicationrepo;
         this.userrepo = userrepo;
         this.redis = redis;
         this.objectMapper = objectMapper;
     }
 
-    public DashboardResponseDto toUser(String username){
+    public DashboardResponseDto toUser(String username) {
         User user = userrepo.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
@@ -45,7 +46,10 @@ public class DashboardService {
             System.out.println("Redis error: " + e.getMessage());
         }
         long total = applicationrepo.countByUserId(userId);
-        long offered = applicationrepo.countByUserIdAndStatus(userId, ApplicationStatus.OFFERED);
+        long offered = applicationrepo.countByUserIdAndStatusIn(userId, java.util.List.of(
+                ApplicationStatus.OFFERED,
+                ApplicationStatus.ACCEPTED,
+                ApplicationStatus.DECLINED));
         long rejected = applicationrepo.countByUserIdAndStatus(userId, ApplicationStatus.REJECTED);
 
         DashboardResponseDto dto = new DashboardResponseDto();
@@ -68,4 +72,3 @@ public class DashboardService {
         return dto;
     }
 }
-
