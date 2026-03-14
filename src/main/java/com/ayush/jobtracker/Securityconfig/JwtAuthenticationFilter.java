@@ -81,8 +81,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
     catch(Exception ex){
         //token invalid stop the filter chain here...
-    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-    return;
+    System.out.println("JWT validation failed: " + ex.getMessage());
     }
 
         //continue filter chain
