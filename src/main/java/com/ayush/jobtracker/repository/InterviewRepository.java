@@ -16,6 +16,7 @@ public interface InterviewRepository extends JpaRepository<Interview,Long>{
     boolean existsByApplicationIdAndRound(Long applicationId, int round);
     boolean existsByApplicationIdAndCompletedAtIsNull(Long applicationId);
     List<Interview> findByScheduledAtLessThanEqualAndReminderStatus(LocalDateTime time, ReminderStatus status);
+    List<Interview> findByApplicationUserIdAndCompletedAtIsNull(Long userId);
 
 
 

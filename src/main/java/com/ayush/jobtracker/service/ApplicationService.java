@@ -85,9 +85,14 @@ public class ApplicationService {
         ApplicationresponseDto updatedStatusToSend = applicationmapper.toUser(newStatusUpdatedApplication);
         return updatedStatusToSend;
     }
-    public List<Application> getAllApplication(String useremail){
+    public List<ApplicationresponseDto> getAllApplication(String useremail){
         User user = userrepo.findByEmail(useremail).orElseThrow(() -> new UsernameNotFoundException("User with username not found in User entity"));
         List<Application> listOfApplications = applicationRepository.findByUserId(user.getId());
-        return listOfApplications;
+        
+        return listOfApplications.stream().map(app -> {
+            ApplicationresponseDto dto = applicationmapper.toUser(app);
+            dto.setHasActiveInterview(interviewRepository.existsByApplicationIdAndCompletedAtIsNull(app.getId()));
+            return dto;
+        }).toList();
     }
 }

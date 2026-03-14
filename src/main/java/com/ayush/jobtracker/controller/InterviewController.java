@@ -38,4 +38,8 @@ public class InterviewController {
     public ResponseEntity<InterviewResponseDto> competeInterview(@PathVariable @NotNull(message = "Id cannot be null") Long id){
         return ResponseEntity.status(HttpStatus.OK).body(interviewservice.markComplete(id));
     }
+    @GetMapping("/open")
+    public ResponseEntity<List<InterviewResponseDto>> getOpenInterviews(java.security.Principal principal){
+        return ResponseEntity.status(HttpStatus.OK).body(interviewservice.getOpenInterviews(principal.getName()));
+    }
 }

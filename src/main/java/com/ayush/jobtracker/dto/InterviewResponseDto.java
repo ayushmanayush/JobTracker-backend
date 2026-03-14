@@ -24,4 +24,6 @@ public class InterviewResponseDto {
     @NotBlank
     private String meetingDetails;
     private LocalDateTime completedAt;
+    private Long id;
+    private String companyName;
 }

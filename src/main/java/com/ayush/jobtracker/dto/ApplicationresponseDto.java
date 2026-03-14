@@ -13,5 +13,5 @@ public class ApplicationresponseDto {
     private String role;
     private ApplicationStatus status;
     private LocalDate appliedDate;
-
+    private boolean hasActiveInterview;
 }

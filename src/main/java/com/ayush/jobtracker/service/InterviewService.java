@@ -24,9 +24,12 @@ import com.ayush.jobtracker.repository.InterviewRepository;
 public class InterviewService {
     private final InterviewRepository interviewrepo;
     private final ApplicationRepository applicationrepo;
-    public InterviewService(InterviewRepository interviewrepo,ApplicationRepository applicationrepo){
-        this.interviewrepo  = interviewrepo;
+    private final UserRepository userrepo;
+
+    public InterviewService(InterviewRepository interviewrepo, ApplicationRepository applicationrepo, UserRepository userrepo) {
+        this.interviewrepo = interviewrepo;
         this.applicationrepo = applicationrepo;
+        this.userrepo = userrepo;
     }
 
     public  InterviewResponseDto scheduleInterview(InterviewRequestDto dto){
@@ -101,6 +104,27 @@ public class InterviewService {
         toSend.setMode(saved.getMode());
         toSend.setRound(saved.getRound());
         toSend.setScheduledAt(saved.getScheduledAt());
+        toSend.setId(saved.getId()); // Logic to ensure ID is set in DTO if it exists
         return toSend;
+    }
+
+    public List<InterviewResponseDto> getOpenInterviews(String userEmail) {
+        User user = userrepo.findByEmail(userEmail).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        List<Interview> openInterviews = interviewrepo.findByApplicationUserIdAndCompletedAtIsNull(user.getId());
+        
+        List<InterviewResponseDto> tosend = new ArrayList<>();
+        for (Interview i : openInterviews) {
+            InterviewResponseDto dto = new InterviewResponseDto();
+            dto.setId(i.getId());
+            dto.setApplicationId(i.getApplication().getId());
+            dto.setCompanyName(i.getApplication().getCompanyName()); // Need to check if DTO has this
+            dto.setMeetingDetails(i.getMeetingDetails());
+            dto.setMode(i.getMode());
+            dto.setCompletedAt(i.getCompletedAt());
+            dto.setRound(i.getRound());
+            dto.setScheduledAt(i.getScheduledAt());
+            tosend.add(dto);
+        }
+        return tosend;
     }
 }

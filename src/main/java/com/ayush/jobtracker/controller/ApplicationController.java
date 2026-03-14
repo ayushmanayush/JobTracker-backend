@@ -50,8 +50,7 @@ public class ApplicationController {
         return ResponseEntity.status(HttpStatus.OK).body(dtoToSend);
     }
     @GetMapping
-    public ResponseEntity<List<Application>> fetchAllApplication(Authentication auth){
-        String email = auth.getName();
-        return ResponseEntity.status(HttpStatus.OK).body(applicationService.getAllApplication(email));
+    public ResponseEntity<List<ApplicationresponseDto>> getApplications(Principal principal){
+        return ResponseEntity.status(HttpStatus.OK).body(applicationService.getAllApplication(principal.getName()));
     }
 }
