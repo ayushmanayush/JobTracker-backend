@@ -6,12 +6,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ayush.jobtracker.dto.ApplicationRequestDto;
 import com.ayush.jobtracker.dto.ApplicationStatusRequestDto;
 import com.ayush.jobtracker.dto.ApplicationresponseDto;
-import com.ayush.jobtracker.entity.Application;
 import com.ayush.jobtracker.service.ApplicationService;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
+import java.security.Principal;
 import java.util.List;
 
 
