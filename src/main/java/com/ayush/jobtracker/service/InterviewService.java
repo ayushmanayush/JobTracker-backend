@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,11 +14,13 @@ import com.ayush.jobtracker.entity.Application;
 import com.ayush.jobtracker.entity.ApplicationStatus;
 import com.ayush.jobtracker.entity.Interview;
 import com.ayush.jobtracker.entity.ReminderStatus;
+import com.ayush.jobtracker.entity.User;
 import com.ayush.jobtracker.exception.ApplicationNotFoundException;
 import com.ayush.jobtracker.exception.InterviewNotFound;
 import com.ayush.jobtracker.exception.ScheduleException;
 import com.ayush.jobtracker.repository.ApplicationRepository;
 import com.ayush.jobtracker.repository.InterviewRepository;
+import com.ayush.jobtracker.repository.UserRepository;
 
 @Service
 @Transactional
