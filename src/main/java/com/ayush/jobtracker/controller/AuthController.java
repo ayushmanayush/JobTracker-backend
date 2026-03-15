@@ -64,12 +64,16 @@ public class AuthController {
         String deviceInfo = request.getHeader("User-Agent");// device information 
         String newrefreshtoken = refreshtokenservice.generateNewToken(userDetails.getUsername(),ip,deviceInfo);
         if(newrefreshtoken != null){
-        Cookie cookie = new Cookie("refreshToken",newrefreshtoken);
-        cookie.setSecure(true);//false in local or else will not run
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(24 * 60 * 60);
-        response.addCookie(cookie);
+            Cookie cookie = new Cookie("refreshToken",newrefreshtoken);
+            
+            // If origin is localhost, we might need to disable Secure unless using HTTPS locally
+            boolean isLocal = request.getHeader("Origin") != null && request.getHeader("Origin").contains("localhost");
+            cookie.setSecure(!isLocal); 
+            
+            cookie.setHttpOnly(true);
+            cookie.setPath("/");
+            cookie.setMaxAge(24 * 60 * 60);
+            response.addCookie(cookie);
         }
         return ResponseEntity.status(HttpStatus.OK).body(new LoginResponseDto(token,userDetails.getFullName()));
     }
@@ -101,12 +105,15 @@ public class AuthController {
         refreshtokenservice.deleteToken(refreshToken);
         String newRefreshToken = refreshtokenservice.generateNewToken(email,ip,deviceInfo);
         if(newRefreshToken != null){
-        Cookie newCookie = new Cookie("refreshToken", newRefreshToken);
-        newCookie.setHttpOnly(true);
-        newCookie.setSecure(true);//false in local or else will not work 
-        newCookie.setPath("/");
-        newCookie.setMaxAge(24 * 60 * 60);
-        response.addCookie(newCookie);
+            Cookie newCookie = new Cookie("refreshToken", newRefreshToken);
+            newCookie.setHttpOnly(true);
+            
+            boolean isLocal = request.getHeader("Origin") != null && request.getHeader("Origin").contains("localhost");
+            newCookie.setSecure(!isLocal);
+            
+            newCookie.setPath("/");
+            newCookie.setMaxAge(24 * 60 * 60);
+            response.addCookie(newCookie);
         }
         String newaccesstoken = jwtService.generateToken(email);
         User user = userRepo.findByEmail(email).orElseThrow(()-> new UsernameNotFoundException("Username not found "));
@@ -136,7 +143,10 @@ public class AuthController {
         refreshtokenservice.deleteToken(refreshtoken);
         Cookie clearCookie = new Cookie("refreshToken", null);
         clearCookie.setHttpOnly(true);
-        clearCookie.setSecure(true);// false in local
+        
+        boolean isLocal = request.getHeader("Origin") != null && request.getHeader("Origin").contains("localhost");
+        clearCookie.setSecure(!isLocal);
+        
         clearCookie.setPath("/");
         clearCookie.setMaxAge(0);
         response.addCookie(clearCookie);

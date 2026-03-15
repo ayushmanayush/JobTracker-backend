@@ -71,14 +71,33 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         }
         String refreshtoken = refreshTokenService.generateNewToken(email,devce_Info,ip);
         if(refreshtoken != null){
-        Cookie refreshTokenCookie = new Cookie("refreshToken",refreshtoken);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(true);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(24 * 60 * 60);
-        response.addCookie(refreshTokenCookie);}
+            Cookie refreshTokenCookie = new Cookie("refreshToken",refreshtoken);
+            refreshTokenCookie.setHttpOnly(true);
+            
+            boolean isLocal = request.getHeader("Origin") != null && request.getHeader("Origin").contains("localhost");
+            refreshTokenCookie.setSecure(!isLocal);
+            
+            refreshTokenCookie.setPath("/");
+            refreshTokenCookie.setMaxAge(24 * 60 * 60);
+            response.addCookie(refreshTokenCookie);
+        }
         response.setContentType("application/json");
-        response.sendRedirect("https://jobtracker-frontend-rccb.vercel.app/oauthsuccess?token=" + jwt+"&name="+name);
+        
+        String targetUrl = request.getHeader("Origin");
+        if (targetUrl == null || targetUrl.isEmpty()) {
+            targetUrl = request.getHeader("Referer");
+        }
+        
+        if (targetUrl == null || targetUrl.isEmpty() || (!targetUrl.contains("localhost") && !targetUrl.contains("127.0.0.1"))) {
+            targetUrl = "https://jobtracker-frontend-rccb.vercel.app";
+        } else {
+            if (targetUrl.endsWith("/")) {
+                targetUrl = targetUrl.substring(0, targetUrl.length() - 1);
+            }
+        }
+        
+        String redirectUrl = targetUrl + "/oauthsuccess?token=" + jwt + "&name=" + name;
+        response.sendRedirect(redirectUrl);
         clearAuthenticationAttributes(request);
     }
 }
