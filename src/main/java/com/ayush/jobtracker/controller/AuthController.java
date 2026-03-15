@@ -29,6 +29,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.HttpHeaders;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -64,16 +67,16 @@ public class AuthController {
         String deviceInfo = request.getHeader("User-Agent");// device information 
         String newrefreshtoken = refreshtokenservice.generateNewToken(userDetails.getUsername(),ip,deviceInfo);
         if(newrefreshtoken != null){
-            Cookie cookie = new Cookie("refreshToken",newrefreshtoken);
-            
-            // If origin is localhost, we might need to disable Secure unless using HTTPS locally
             boolean isLocal = request.getHeader("Origin") != null && request.getHeader("Origin").contains("localhost");
-            cookie.setSecure(!isLocal); 
             
-            cookie.setHttpOnly(true);
-            cookie.setPath("/");
-            cookie.setMaxAge(24 * 60 * 60);
-            response.addCookie(cookie);
+            ResponseCookie cookie = ResponseCookie.from("refreshToken", newrefreshtoken)
+                    .httpOnly(true)
+                    .secure(!isLocal)
+                    .sameSite(isLocal ? "Lax" : "None")
+                    .path("/")
+                    .maxAge(24 * 60 * 60)
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         }
         return ResponseEntity.status(HttpStatus.OK).body(new LoginResponseDto(token,userDetails.getFullName()));
     }
@@ -105,15 +108,16 @@ public class AuthController {
         refreshtokenservice.deleteToken(refreshToken);
         String newRefreshToken = refreshtokenservice.generateNewToken(email,ip,deviceInfo);
         if(newRefreshToken != null){
-            Cookie newCookie = new Cookie("refreshToken", newRefreshToken);
-            newCookie.setHttpOnly(true);
-            
             boolean isLocal = request.getHeader("Origin") != null && request.getHeader("Origin").contains("localhost");
-            newCookie.setSecure(!isLocal);
             
-            newCookie.setPath("/");
-            newCookie.setMaxAge(24 * 60 * 60);
-            response.addCookie(newCookie);
+            ResponseCookie newCookie = ResponseCookie.from("refreshToken", newRefreshToken)
+                    .httpOnly(true)
+                    .secure(!isLocal)
+                    .sameSite(isLocal ? "Lax" : "None")
+                    .path("/")
+                    .maxAge(24 * 60 * 60)
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, newCookie.toString());
         }
         String newaccesstoken = jwtService.generateToken(email);
         User user = userRepo.findByEmail(email).orElseThrow(()-> new UsernameNotFoundException("Username not found "));
@@ -141,15 +145,18 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         refreshtokenservice.deleteToken(refreshtoken);
-        Cookie clearCookie = new Cookie("refreshToken", null);
-        clearCookie.setHttpOnly(true);
         
         boolean isLocal = request.getHeader("Origin") != null && request.getHeader("Origin").contains("localhost");
-        clearCookie.setSecure(!isLocal);
         
-        clearCookie.setPath("/");
-        clearCookie.setMaxAge(0);
-        response.addCookie(clearCookie);
+        ResponseCookie clearCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(!isLocal)
+                .sameSite(isLocal ? "Lax" : "None")
+                .path("/")
+                .maxAge(0)
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, clearCookie.toString());
+        
         return ResponseEntity.status(HttpStatus.ACCEPTED).body("User Logged out Successfully");
     }
 }

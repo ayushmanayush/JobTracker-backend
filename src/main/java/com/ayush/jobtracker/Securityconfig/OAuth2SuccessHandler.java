@@ -16,10 +16,11 @@ import com.ayush.jobtracker.repository.UserRepository;
 import com.ayush.jobtracker.service.EmailService;
 import com.ayush.jobtracker.service.JwtService;
 import com.ayush.jobtracker.service.RefreshTokenService;
-
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.HttpHeaders;
 
 @Component
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
@@ -71,15 +72,17 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         }
         String refreshtoken = refreshTokenService.generateNewToken(email,devce_Info,ip);
         if(refreshtoken != null){
-            Cookie refreshTokenCookie = new Cookie("refreshToken",refreshtoken);
-            refreshTokenCookie.setHttpOnly(true);
+            boolean isLocal = (request.getHeader("Origin") != null && request.getHeader("Origin").contains("localhost")) ||
+                              (request.getHeader("Referer") != null && request.getHeader("Referer").contains("localhost"));
             
-            boolean isLocal = request.getHeader("Origin") != null && request.getHeader("Origin").contains("localhost");
-            refreshTokenCookie.setSecure(!isLocal);
-            
-            refreshTokenCookie.setPath("/");
-            refreshTokenCookie.setMaxAge(24 * 60 * 60);
-            response.addCookie(refreshTokenCookie);
+            ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshtoken)
+                    .httpOnly(true)
+                    .secure(!isLocal)
+                    .sameSite(isLocal ? "Lax" : "None")
+                    .path("/")
+                    .maxAge(24 * 60 * 60)
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         }
         response.setContentType("application/json");
         
