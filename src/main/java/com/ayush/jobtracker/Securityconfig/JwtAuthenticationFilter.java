@@ -80,8 +80,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
     }
     catch(Exception ex){
-        //token invalid stop the filter chain here...
-    System.out.println("JWT validation failed: " + ex.getMessage());
+        SecurityContextHolder.clearContext();
     }
 
         //continue filter chain
