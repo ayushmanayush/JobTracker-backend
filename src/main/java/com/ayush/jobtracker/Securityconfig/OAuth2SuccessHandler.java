@@ -11,6 +11,7 @@ import java.util.UUID;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -31,11 +32,13 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final UserRepository userRepository;
     private final RefreshTokenService refreshTokenService;
     private final EmailService emailService;
-    public OAuth2SuccessHandler(JwtService jwtService, UserRepository userRepository, RefreshTokenService refreshTokenService, EmailService emailService) {
+    private final PasswordEncoder passwordencoder;
+    public OAuth2SuccessHandler(JwtService jwtService, UserRepository userRepository, RefreshTokenService refreshTokenService, EmailService emailService,PasswordEncoder passwordencoder) {
         this.jwtService = jwtService;
         this.userRepository = userRepository;
         this.refreshTokenService = refreshTokenService;
         this.emailService = emailService;
+        this.passwordencoder = passwordencoder;
 
         setRedirectStrategy((request, response, url) -> {});
     }
@@ -60,7 +63,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                     User user = new User();
                     user.setEmail(email);
                     user.setFullName(name);
-                    user.setPassword(password);
+                    user.setPassword(passwordencoder.encode(password));
                     User savedUser = userRepository.save(user);
                     emailService.sendRegisterMail(email, password);
                     return savedUser;
@@ -75,7 +78,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String refreshtoken = refreshTokenService.generateNewToken(email,devce_Info,ip);
         String state = request.getParameter("state");
         if(refreshtoken != null){
-            boolean isLocal = "LOCAL".equals(state);
+            String origin = request.getHeader("Origin");
+            boolean isLocal = origin != null && origin.contains("localhost");
             
             ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshtoken)
                     .httpOnly(true)

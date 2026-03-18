@@ -64,7 +64,7 @@ public class SecurityConfiguration{
         );
         http.oauth2Login(oauth -> oauth.successHandler(oAuth2SuccessHandler));
         http.addFilterBefore(jwtAuthenticationFilter,UsernamePasswordAuthenticationFilter.class);
-        http.sessionManagement(Session -> Session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+        http.sessionManagement(Session -> Session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return http.build();
 
     }
