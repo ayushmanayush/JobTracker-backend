@@ -3,9 +3,13 @@ package com.ayush.jobtracker.Securityconfig;
 
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -16,11 +20,9 @@ import com.ayush.jobtracker.repository.UserRepository;
 import com.ayush.jobtracker.service.EmailService;
 import com.ayush.jobtracker.service.JwtService;
 import com.ayush.jobtracker.service.RefreshTokenService;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.HttpHeaders;
 
 @Component
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
@@ -71,9 +73,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             ip = request.getRemoteAddr();// for ip address if not fetched using  getHeader("X-Forward-For")
         }
         String refreshtoken = refreshTokenService.generateNewToken(email,devce_Info,ip);
+        String state = request.getParameter("state");
         if(refreshtoken != null){
-            boolean isLocal = (request.getHeader("Origin") != null && request.getHeader("Origin").contains("localhost")) ||
-                              (request.getHeader("Referer") != null && request.getHeader("Referer").contains("localhost"));
+            boolean isLocal = "LOCAL".equals(state);
             
             ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshtoken)
                     .httpOnly(true)
@@ -84,22 +86,17 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         }
-        response.setContentType("application/json");
         
-        String targetUrl = request.getHeader("Origin");
-        if (targetUrl == null || targetUrl.isEmpty()) {
-            targetUrl = request.getHeader("Referer");
-        }
-        
-        if (targetUrl == null || targetUrl.isEmpty() || (!targetUrl.contains("localhost") && !targetUrl.contains("127.0.0.1"))) {
-            targetUrl = "https://jobtracker-frontend-rccb.vercel.app";
-        } else {
-            if (targetUrl.endsWith("/")) {
-                targetUrl = targetUrl.substring(0, targetUrl.length() - 1);
+        String targetUrl;
+        if("LOCAL".equals(state))
+            {
+                targetUrl = "http://localhost:5173";
             }
-        }
+            else{
+                targetUrl = "https://jobtracker-frontend-rccb.vercel.app";
+            }
         
-        String redirectUrl = targetUrl + "/oauthsuccess?token=" + jwt + "&name=" + name;
+        String redirectUrl = targetUrl + "/oauthsuccess?token=" + URLEncoder.encode(jwt, StandardCharsets.UTF_8) + "&name=" + URLEncoder.encode(name,StandardCharsets.UTF_8);
         response.sendRedirect(redirectUrl);
         clearAuthenticationAttributes(request);
     }
