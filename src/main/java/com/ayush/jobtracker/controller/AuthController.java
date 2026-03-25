@@ -3,7 +3,9 @@ package com.ayush.jobtracker.controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,9 +30,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.HttpHeaders;
 
 @RestController
 @RequestMapping("/auth")
@@ -67,12 +66,10 @@ public class AuthController {
         String deviceInfo = request.getHeader("User-Agent");// device information 
         String newrefreshtoken = refreshtokenservice.generateNewToken(userDetails.getUsername(),ip,deviceInfo);
         if(newrefreshtoken != null){
-            boolean isLocal = request.getHeader("Origin") != null && request.getHeader("Origin").contains("localhost");
-            
             ResponseCookie cookie = ResponseCookie.from("refreshToken", newrefreshtoken)
                     .httpOnly(true)
-                    .secure(!isLocal)
-                    .sameSite(isLocal ? "Lax" : "None")
+                    .secure(true)
+                    .sameSite("None")
                     .path("/")
                     .maxAge(24 * 60 * 60)
                     .build();
@@ -108,12 +105,10 @@ public class AuthController {
         refreshtokenservice.deleteToken(refreshToken);
         String newRefreshToken = refreshtokenservice.generateNewToken(email,ip,deviceInfo);
         if(newRefreshToken != null){
-            boolean isLocal = request.getHeader("Origin") != null && request.getHeader("Origin").contains("localhost");
-            
             ResponseCookie newCookie = ResponseCookie.from("refreshToken", newRefreshToken)
                     .httpOnly(true)
-                    .secure(!isLocal)
-                    .sameSite(isLocal ? "Lax" : "None")
+                    .secure(true)
+                    .sameSite("None")
                     .path("/")
                     .maxAge(24 * 60 * 60)
                     .build();
@@ -146,12 +141,11 @@ public class AuthController {
         }
         refreshtokenservice.deleteToken(refreshtoken);
         
-        boolean isLocal = request.getHeader("Origin") != null && request.getHeader("Origin").contains("localhost");
         
         ResponseCookie clearCookie = ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
-                .secure(!isLocal)
-                .sameSite(isLocal ? "Lax" : "None")
+                .secure(true)
+                .sameSite("None")
                 .path("/")
                 .maxAge(0)
                 .build();
