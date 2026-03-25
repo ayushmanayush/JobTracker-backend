@@ -7,6 +7,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
@@ -27,7 +28,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
     private final OAuthUserService oauthService;
-    public OAuth2SuccessHandler(JwtService jwtService, RefreshTokenService refreshTokenService ,OAuthUserService oauthService) {
+    public OAuth2SuccessHandler(JwtService jwtService, RefreshTokenService refreshTokenService ,@Lazy OAuthUserService oauthService) {
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
         this.oauthService = oauthService;

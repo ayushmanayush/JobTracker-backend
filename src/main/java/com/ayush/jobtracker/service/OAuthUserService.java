@@ -1,6 +1,7 @@
 package com.ayush.jobtracker.service;
 import java.util.UUID;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +16,7 @@ public class OAuthUserService {
     private final EmailService emailService;
 
     public OAuthUserService(UserRepository userRepository,
-                            PasswordEncoder passwordEncoder,
+                            @Lazy PasswordEncoder passwordEncoder,
                             EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
