@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class RefreshTokenService{
     private final StringRedisTemplate redis;
     private final ObjectMapper objectmapper;
-    RefreshTokenService(StringRedisTemplate redis,ObjectMapper objectmapper){
+    public RefreshTokenService(StringRedisTemplate redis,ObjectMapper objectmapper){
         this.redis = redis;
         this.objectmapper = objectmapper;
     }
